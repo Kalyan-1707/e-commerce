@@ -9,4 +9,6 @@ import com.ecommerce.project.model.Product;
 
 public interface ProductRepository extends JpaRepository<Product,Long> {
     List<Product> findByCategoryOrderByPriceAsc(Category category);
+
+    List<Product> findByProductNameContainingIgnoreCase(String keyword);
 }

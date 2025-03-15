@@ -1,14 +1,11 @@
 package com.ecommerce.project.service;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +28,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private FileService fileService;
+
+    @Value("${project.image}")
+    private String path;
 
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
@@ -118,8 +121,8 @@ public class ProductServiceImpl implements ProductService {
         Product productFromDB = productRepository.findById(productId)
         .orElseThrow(() -> new ResourceNotFoundException("Product","productId",productId));
 
-        String path = "images/";
-        String fileName = upload(path, image);
+        
+        String fileName = fileService.upload(path, image);
         
         productFromDB.setImage(fileName);
         productRepository.save(productFromDB);
@@ -127,25 +130,4 @@ public class ProductServiceImpl implements ProductService {
         return modelMapper.map(productFromDB, ProductDTO.class);
         }
         
-    private String upload(String path, MultipartFile file) throws IOException {
-        String originalFileName = file.getOriginalFilename();
-
-        String fileType = originalFileName.substring(originalFileName.lastIndexOf("."));
-
-        String randomUUID = UUID.randomUUID().toString();
-
-        String randomFileName = randomUUID + fileType;
-
-        String filePath = path + File.separator + randomFileName;
-
-        File folder = new File(path);
-        if(!folder.exists()){
-            folder.mkdir();
-        }
-
-        Files.copy(file.getInputStream(), Paths.get(filePath));
-
-        return randomFileName;
-    }
-    
 }
